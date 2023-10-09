@@ -1,71 +1,75 @@
-const {users} = require('../../Models/users.js')
-const bcrypt = require('bcrypt');
+const {users} = require('../Models/users.js')
+const bcrypt = require('bcrypt')
+const passport = require('passport')
 
-// User registration route (GET)
-const registerPage =  (req, res) => {
-  res.render('register'); // Render the 'register' view for user registration
-};
 
-// User registration route (POST)
-const registerDone = (req, res) => {
+const initializePassport = require('../passport.js')
+initializePassport(
+  passport,
+  email => users.find(user => user.email === email),
+  id => users.find(user => user.id === id)
+)
+
+const blog = (checkAuthenticated, (req, res) => {
+  res.render('blog.ejs',)
+});
+
+const login = (checkNotAuthenticated, (req, res) => {
+  res.render('login.ejs')
+})
+
+const loginDone = (checkNotAuthenticated, passport.authenticate('local', {
+  successRedirect: '/blogs',
+  failureRedirect: '/login',
+  failureFlash: true
+}))
+
+const registerPage = (checkNotAuthenticated, (req, res) => {
+  res.render('register.ejs')
+})
+
+const registerDone = (checkNotAuthenticated, async (req, res) => {
   try {
-    // Get user input from the registration form
-    const { email, password } = req.body;
-
-    // Check if the email is already registered (you should validate email uniqueness)
-    const isEmailTaken = users.some((user) => user.email === email);
-    if (isEmailTaken) {
-      return res.render('register', { error: 'Email is already registered' });
-    }
-
-    // Hash the user's password securely
-    const hashedPassword = bcrypt.hash(password, 10); // 10 is the number of hashing rounds
-
-    // Create a new user object with the hashed password
-    const newUser = {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10)
+    users.push({
       id: users.length + 1,
-      email,
-      password: hashedPassword,
-    };
+      name: req.body.name,
+      email: req.body.email,
+      password: hashedPassword
+    })
+    res.redirect('/login')
+  } catch {
+    res.redirect('/register')
+  }
+})
 
-    // Add the new user to the users array (for simplicity, we're using an array)
-    users.push(newUser);
-
-    // Redirect to the login page after successful registration
+const logOut = function(req, res) {
+  req.logout(function(err) {
+    if (err) { return next(err); }
     res.redirect('/login');
-  } catch (error) {
-    console.error('Error during registration:', error);
-    res.status(500).json({ error: 'Internal server error' });
+  });
+};
+
+function checkAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next()
   }
-};
 
-// User login route (GET)
-const login =  (req, res) => {
-  res.render('login'); // Render the 'login' view for user login
-};
+  res.redirect('/login')
+}
 
-// User login route (POST)
-const loginDone = (req, res) => {
-  try {
-    // Get user input from the login form
-    const { email, password } = req.body;
-
-    // Find the user by email (you should retrieve the user from a database)
-    const user = users.find((user) => user.email === email);
-
-    // Check if the user exists and the password matches
-    if (!user || !( bcrypt.compare(password, user.password))) {
-      return res.render('login', { error: 'Invalid email or password' });
-    }
-
-    // At this point, the user is successfully authenticated
-    // In a real application, you would typically use JWT or sessions to manage the authenticated state
-    // Redirect to a user profile page or dashboard after successful login
-    res.redirect('/blogs');
-  } catch (error) {
-    console.error('Error during login:', error);
-    res.status(500).json({ error: 'Internal server error' });
+function checkNotAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return res.redirect('/')
   }
-};
+  next()
+}
 
-module.exports = { registerPage , registerDone , loginDone , login };
+module.exports = { initializePassport , 
+  blog , 
+  login ,
+  loginDone, 
+  registerPage,
+  registerDone,
+  logOut,
+}

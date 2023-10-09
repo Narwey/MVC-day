@@ -1,22 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Blog Posts</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
+  <style>
+    /* Add your custom styles here */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      position: relative; /* Add this line */
+    }
+    
+    /* Style the Log Out button */
+    .logout-button {
+      background-color: #ff3333;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      position: absolute;
+      top: 10px; /* Adjust the top position as needed */
+      right: 20px; /* Adjust the right position as needed */
+    }
+    
+    .logout-button:hover {
+      background-color: #cc0000;
+    }
+    
+    /* Rest of your existing styles */
+  </style>
 </head>
 <body>
+  <!-- Log Out button -->
+  <form action="/logout" method="POST" class="logout-form">
+    <button type="submit" class="logout-button">Log Out</button>
+  </form>
   <h1>Blog Posts</h1>
     <ul>
         <% blogPosts.forEach((post) => { %>
           <li>
             <h2><%= post.title %></h2>
-            <img src="<%= post.image %>" alt="<%= post.title %> Image" class="blog-image">
+            <!-- <img src="<%= post.image %>" alt="<%= post.title %> Image" class="blog-image"> -->
             <p><strong>Author:</strong> <%= post.author %></p>
             <p><strong>Release Year:</strong> <%= post.releaseYear %></p>
             <p><%= post.content %></p>
 
             <!-- Edit button -->
-            <form method="GET" action="/<%= post.id %>/edit" class="button-form">
-              <button type="submit" class="edit-button">Edit</button>
+            
+              <button type="submit" class="edit-button"><a href = "/edit/<%= post.id %>" class="edit-button">Edit</a></button>
+            <!-- Add New Post button -->
+            <form method="GET" action="/add" class="button-form">
+              <button type="submit" class="edit-button">Add New Post</button>
             </form>
             
             <form method="POST" action="<%= post.id %>/delete" class="button-form">

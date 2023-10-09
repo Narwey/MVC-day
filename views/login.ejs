@@ -6,12 +6,7 @@
 </head>
 <body>
   <h1>User Login</h1>
-  
-  <% if (locals.error) { %>
-    <p><strong>Error:</strong> <%= locals.error %></p>
-  <% } %>
-
-  <form method="get" action="/blogs">
+  <form method="post" action="/login">
     <label for="email">Email:</label>
     <input type="email" id="email" name="email" required>
     
@@ -20,7 +15,6 @@
     
     <button type="submit">Login</button>
   </form>
-
   <p>Don't have an account? <a href="/register">Register here</a></p>
 </body>
 </html>
